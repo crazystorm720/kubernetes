@@ -1,3 +1,281 @@
+# Kubernetes Core Concepts to Master
+
+## 1. Pods
+
+- **Definition**: Smallest deployable units in Kubernetes
+- **Key Characteristics**:
+  - Can contain one or more containers
+  - Share network namespace and storage
+  - Ephemeral (not designed to be long-lived)
+- **Use Cases**:
+  - Running a single container
+  - Tightly coupled application components
+- **Important Considerations**:
+  - Resource requests and limits
+  - Readiness and liveness probes
+  - Init containers
+- **Example YAML**:
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: nginx-pod
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+      - containerPort: 80
+  ```
+
+## 2. Deployments
+
+- **Definition**: Manages a replicated application on your cluster
+- **Key Characteristics**:
+  - Ensures a specified number of pod replicas are running
+  - Supports rolling updates and rollbacks
+  - Provides declarative updates for Pods and ReplicaSets
+- **Use Cases**:
+  - Deploying stateless applications
+  - Ensuring high availability of applications
+- **Important Considerations**:
+  - Update strategy (RollingUpdate vs Recreate)
+  - Revision history limit
+  - Scaling (manual and auto)
+- **Example YAML**:
+  ```yaml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: nginx-deployment
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: nginx
+    template:
+      metadata:
+        labels:
+          app: nginx
+      spec:
+        containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+          - containerPort: 80
+  ```
+
+## 3. Services
+
+- **Definition**: An abstract way to expose an application running on a set of Pods
+- **Key Characteristics**:
+  - Provides stable network endpoint
+  - Load balances traffic to Pods
+  - Supports different types: ClusterIP, NodePort, LoadBalancer
+- **Use Cases**:
+  - Exposing applications within or outside the cluster
+  - Service discovery within the cluster
+- **Important Considerations**:
+  - Service types and their use cases
+  - Service discovery and DNS
+  - Headless services for direct Pod addressing
+- **Example YAML**:
+  ```yaml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: nginx-service
+  spec:
+    selector:
+      app: nginx
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+    type: ClusterIP
+  ```
+
+## 4. ConfigMaps and Secrets
+
+- **Definition**: 
+  - ConfigMaps: Store non-confidential configuration data
+  - Secrets: Store sensitive information
+- **Key Characteristics**:
+  - Decouple configuration from image content
+  - Can be used as environment variables, command-line arguments, or config files
+- **Use Cases**:
+  - Application configuration
+  - Storing API keys, passwords, certificates
+- **Important Considerations**:
+  - Updating ConfigMaps and Secrets
+  - Secret encryption at rest
+  - Mounting as volumes vs. environment variables
+- **Example YAML**:
+  ```yaml
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: app-config
+  data:
+    APP_COLOR: blue
+    APP_MODE: prod
+
+  ---
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: app-secret
+  type: Opaque
+  data:
+    DB_PASSWORD: cGFzc3dvcmQ=  # base64 encoded
+  ```
+
+## 5. Persistent Volumes and Claims
+
+- **Definition**:
+  - Persistent Volumes (PV): A piece of storage in the cluster
+  - Persistent Volume Claims (PVC): A request for storage by a user
+- **Key Characteristics**:
+  - Abstracts details of how storage is provided from how it is consumed
+  - Supports different storage classes
+- **Use Cases**:
+  - Databases, file storage, shared application data
+- **Important Considerations**:
+  - Storage classes and provisioners
+  - Access modes (ReadWriteOnce, ReadOnlyMany, ReadWriteMany)
+  - Reclaim policies
+- **Example YAML**:
+  ```yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-volume
+  spec:
+    capacity:
+      storage: 1Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: manual
+    nfs:
+      server: nfs-server.default.svc.cluster.local
+      path: "/path/to/data"
+
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pv-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: manual
+  ```
+
+## 6. Namespaces
+
+- **Definition**: Virtual clusters backed by the same physical cluster
+- **Key Characteristics**:
+  - Provides a scope for names
+  - Allows resource isolation and quota management
+- **Use Cases**:
+  - Multi-tenant environments
+  - Separating different stages (e.g., development, staging, production)
+- **Important Considerations**:
+  - Resource quotas
+  - Network policies between namespaces
+  - Default vs. custom namespaces
+- **Example YAML**:
+  ```yaml
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: development
+  ```
+
+## 7. Ingress
+
+- **Definition**: API object that manages external access to services in a cluster
+- **Key Characteristics**:
+  - Provides HTTP/HTTPS routing
+  - Can handle SSL termination
+  - Supports name-based virtual hosting
+- **Use Cases**:
+  - Exposing multiple services under a single IP address
+  - SSL/TLS termination
+  - URL-based routing
+- **Important Considerations**:
+  - Ingress controller selection (e.g., Nginx, Traefik)
+  - SSL/TLS certificate management
+  - Path-based and host-based routing rules
+- **Example YAML**:
+  ```yaml
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: example-ingress
+  spec:
+    rules:
+    - host: example.com
+      http:
+        paths:
+        - path: /app
+          pathType: Prefix
+          backend:
+            service:
+              name: app-service
+              port: 
+                number: 80
+  ```
+
+## 8. RBAC (Role-Based Access Control)
+
+- **Definition**: Regulates access to resources based on the roles of individual users
+- **Key Characteristics**:
+  - Defines Roles (namespace-specific) and ClusterRoles (cluster-wide)
+  - Uses RoleBindings and ClusterRoleBindings to assign roles to users
+- **Use Cases**:
+  - Implementing principle of least privilege
+  - Managing access for different teams or users
+- **Important Considerations**:
+  - Granularity of permissions
+  - Service account roles
+  - Regular audits of RBAC policies
+- **Example YAML**:
+  ```yaml
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    namespace: default
+    name: pod-reader
+  rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+
+  ---
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: read-pods
+    namespace: default
+  subjects:
+  - kind: User
+    name: jane
+    apiGroup: rbac.authorization.k8s.io
+  roleRef:
+    kind: Role
+    name: pod-reader
+    apiGroup: rbac.authorization.k8s.io
+  ```
+
+Each of these concepts is crucial for effectively working with Kubernetes. Understanding their definitions, characteristics, use cases, and important considerations will provide a solid foundation for managing containerized applications in a Kubernetes environment.
+
+---
+
 # Kubernetes (K8s) Strategy Document
 
 ## 1. Understanding Our Needs
