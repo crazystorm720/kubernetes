@@ -404,4 +404,140 @@ In shared clusters, namespaces can be used to separate different teams, projects
 10. **Use namespace selectors in your Ingress**:
     If you're using Ingress resources, you can use namespace selectors to route traffic to services in specific namespaces.
 
-By following these practices, you'll be able to effectively utilize Kubernetes namespaces to improve the organization, security, and resource management of your cluster.
+By following these practices, you'll be able to effectively utilize Kubernetes namespaces to improve your cluster's organization, security, and resource management.
+
+---
+
+# Standard Kubernetes Namespace Schema
+
+## Core Namespaces
+
+1. **kube-system**: Reserved for Kubernetes system components.
+2. **kube-public**: Publicly readable, used for cluster-wide resources.
+3. **kube-node-lease**: Used for node heartbeat data.
+
+## Environment Namespaces
+
+4. **development**: For development workloads.
+5. **staging**: For pre-production testing.
+6. **production**: For production workloads.
+
+## Application Namespaces
+
+7. **app-{name}**: For each major application or service (e.g., `app-frontend`, `app-backend`).
+
+## Infrastructure Namespaces
+
+8. **monitoring**: For monitoring tools (e.g., Prometheus, Grafana).
+9. **logging**: For logging infrastructure (e.g., ELK stack).
+10. **ingress**: For ingress controllers and related configs.
+
+## Team Namespaces
+
+11. **team-{name}**: For team-specific resources (e.g., `team-data-science`, `team-devops`).
+
+## Utility Namespaces
+
+12. **tools**: For shared development tools (e.g., CI/CD pipelines).
+13. **security**: For security-related tools and policies.
+
+## Tenant Namespaces (for multi-tenant clusters)
+
+14. **tenant-{name}**: For isolating resources of different tenants.
+
+## Best Practices
+
+- **Consistent Naming Conventions**: Use lowercase letters and hyphens for spaces.
+- **Resource Quotas and Limits**: Apply resource quotas and limits to each namespace to manage capacity.
+- **RBAC Policies**: Implement role-based access control (RBAC) policies for fine-grained access control.
+- **Network Policies**: Use network policies to control communication between namespaces.
+- **Consistent Labeling**: Label all resources within namespaces consistently to facilitate management and automation.
+
+## Why Namespaces are Important
+
+1. **Resource Isolation**: Namespaces provide a scope for names, allowing you to organize cluster resources into non-overlapping groups.
+2. **Access Control**: Implementing RBAC within namespaces limits who can perform actions in specific parts of your cluster.
+3. **Resource Quotas**: Enforcing resource quotas at the namespace level helps manage cluster capacity and prevent resource hogging.
+4. **Environment Separation**: Use namespaces to separate different environments (e.g., development, staging, production) within the same cluster.
+5. **Multi-tenancy**: Namespaces enable resource isolation for different teams, projects, or customers in shared clusters.
+
+## How to Utilize Namespaces Correctly
+
+1. **Create Meaningful Namespaces**:
+   - Use descriptive names reflecting the purpose (e.g., `production-env`, `dev-team-a`).
+
+2. **Specify Namespace in Resource Definitions**:
+   - Always include the namespace in your YAML files.
+   ```yaml
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     name: mypod
+     namespace: dev-team-a
+   ```
+
+3. **Set Default Namespace for Context**:
+   - To avoid specifying the namespace each time, set a default:
+   ```
+   kubectl config set-context --current --namespace=dev-team-a
+   ```
+
+4. **Namespace-Based Resource Quotas**:
+   - Implement quotas to limit resource usage per namespace:
+   ```yaml
+   apiVersion: v1
+   kind: ResourceQuota
+   metadata:
+     name: compute-resources
+     namespace: dev-team-a
+   spec:
+     hard:
+       requests.cpu: "1"
+       requests.memory: 1Gi
+       limits.cpu: "2"
+       limits.memory: 2Gi
+   ```
+
+5. **Network Policies**:
+   - Control traffic flow between namespaces:
+   ```yaml
+   apiVersion: networking.k8s.io/v1
+   kind: NetworkPolicy
+   metadata:
+     name: deny-from-other-namespaces
+     namespace: dev-team-a
+   spec:
+     podSelector:
+       matchLabels:
+     ingress:
+     - from:
+       - podSelector: {}
+   ```
+
+6. **RBAC with Namespaces**:
+   - Apply role-based access control scoped to namespaces:
+   ```yaml
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: Role
+   metadata:
+     namespace: dev-team-a
+     name: pod-reader
+   rules:
+   - apiGroups: [""]
+     resources: ["pods"]
+     verbs: ["get", "watch", "list"]
+   ```
+
+7. **Naming Conventions**:
+   - Establish a clear naming convention for your namespaces (e.g., `<environment>-<team>-<project>`, such as `prod-frontend`).
+
+8. **Avoid Overuse**:
+   - Avoid creating too many namespaces. Group resources logically around team boundaries or major subsystems.
+
+9. **Be Aware of Namespace Limitations**:
+   - Some resources (e.g., Nodes, PersistentVolumes) are cluster-scoped and do not belong to any namespace.
+
+10. **Namespace Selectors in Ingress**:
+    - Use namespace selectors to route traffic to services in specific namespaces when using Ingress resources.
+
+By following these best practices, you can effectively utilize Kubernetes namespaces to improve the organization, security, and resource management of your cluster.
