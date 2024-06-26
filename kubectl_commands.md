@@ -1,3 +1,293 @@
+# Kubernetes Workflow Guide: Lifecycle Management and Pipeline Tasks
+
+## 1. Deployment
+
+### Deploying Applications
+
+#### Create a Deployment
+```sh
+kubectl apply -f <deployment.yaml>
+```
+Creates a deployment from a YAML file.
+
+#### Example Deployment YAML
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app-container
+        image: my-app-image:latest
+        ports:
+        - containerPort: 80
+```
+
+### Exposing Applications
+
+#### Create a Service
+```sh
+kubectl expose deployment my-app --port=80 --target-port=8080 --type=LoadBalancer
+```
+Exposes a deployment as a service.
+
+#### Example Service YAML
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+```
+
+### Creating Ingress Resources
+
+#### Create an Ingress
+```sh
+kubectl apply -f <ingress.yaml>
+```
+Creates an ingress resource from a YAML file.
+
+#### Example Ingress YAML
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+spec:
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app-service
+            port:
+              number: 80
+```
+
+## 2. Scaling
+
+### Scaling Deployments
+
+#### Scale a Deployment
+```sh
+kubectl scale deployment my-app --replicas=5
+```
+Scales the specified deployment to the desired number of replicas.
+
+### Auto-Scaling
+
+#### Create a Horizontal Pod Autoscaler
+```sh
+kubectl autoscale deployment my-app --cpu-percent=50 --min=1 --max=10
+```
+Automatically scales the deployment based on CPU utilization.
+
+#### Example HPA YAML
+```yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-app
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+```
+
+## 3. Updating
+
+### Rolling Updates
+
+#### Update a Deployment
+```sh
+kubectl set image deployment/my-app my-app-container=my-app-image:v2
+```
+Updates the image of the deployment to a new version.
+
+### Monitor Rollout Status
+```sh
+kubectl rollout status deployment/my-app
+```
+Checks the status of the rollout.
+
+### Rollback a Deployment
+```sh
+kubectl rollout undo deployment/my-app
+```
+Rolls back the deployment to the previous version.
+
+## 4. Monitoring
+
+### Viewing Logs
+
+#### View Pod Logs
+```sh
+kubectl logs <pod-name>
+```
+Displays the logs for a specific pod.
+
+#### Stream Pod Logs
+```sh
+kubectl logs -f <pod-name>
+```
+Streams the logs for a specific pod.
+
+### Describe Resources
+
+#### Describe a Pod
+```sh
+kubectl describe pod <pod-name>
+```
+Displays detailed information about a specific pod.
+
+#### Describe a Node
+```sh
+kubectl describe node <node-name>
+```
+Displays detailed information about a specific node.
+
+### Resource Usage Metrics
+
+#### Top Pods
+```sh
+kubectl top pod
+```
+Displays resource usage for pods.
+
+#### Top Nodes
+```sh
+kubectl top node
+```
+Displays resource usage for nodes.
+
+## 5. Storage Management
+
+### Managing Persistent Volumes (PVs) and Persistent Volume Claims (PVCs)
+
+#### Create a Persistent Volume
+```sh
+kubectl apply -f <pv.yaml>
+```
+Creates a persistent volume from a YAML file.
+
+#### Create a Persistent Volume Claim
+```sh
+kubectl apply -f <pvc.yaml>
+```
+Creates a persistent volume claim from a YAML file.
+
+#### Example PV YAML
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-demo
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data
+```
+
+#### Example PVC YAML
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-demo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+### Configuring Volume Mounts in Pods
+
+#### Example Pod with PVC
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-demo
+spec:
+  containers:
+  - name: busybox
+    image: busybox
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - mountPath: /usr/share/busybox
+      name: demo-volume
+  volumes:
+  - name: demo-volume
+    persistentVolumeClaim:
+      claimName: pvc-demo
+```
+
+## 6. Cleaning Up
+
+### Delete Resources
+
+#### Delete a Deployment
+```sh
+kubectl delete deployment my-app
+```
+Deletes a specific deployment.
+
+#### Delete a Service
+```sh
+kubectl delete service my-app-service
+```
+Deletes a specific service.
+
+#### Delete an Ingress
+```sh
+kubectl delete ingress my-app-ingress
+```
+Deletes a specific ingress.
+
+#### Delete a Persistent Volume
+```sh
+kubectl delete pv pv-demo
+```
+Deletes a specific persistent volume.
+
+#### Delete a Persistent Volume Claim
+```sh
+kubectl delete pvc pvc-demo
+```
+Deletes a specific persistent volume claim.
+
+---
+
 # Kubernetes `kubectl` Command Guide
 
 ## Storage Management
