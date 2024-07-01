@@ -1,3 +1,120 @@
+To build network diagrams using as much code as possible, you can use tools like **Mermaid** or **PlantUML**, both of which allow you to describe diagrams using simple text-based syntax.
+
+### Using Mermaid
+
+Mermaid is a great tool for creating diagrams from textual descriptions. It can be easily integrated into many documentation platforms like GitHub, GitLab, and various static site generators.
+
+#### Example Network Diagram with Mermaid
+
+```mermaid
+graph TD
+    subgraph Network
+        Router["Router"] --- Switch["Switch"]
+        Switch --- PC["PC"]
+        Switch --- Printer["Printer"]
+        Router --- Server["Server"]
+    end
+```
+
+You can render this diagram using any Mermaid-compatible tool or website, such as the Mermaid Live Editor: [Mermaid Live Editor](https://mermaid-js.github.io/mermaid-live-editor/).
+
+### Using PlantUML
+
+PlantUML is another powerful tool for creating diagrams from textual descriptions. It's widely used for UML diagrams but can also be used for network diagrams.
+
+#### Example Network Diagram with PlantUML
+
+```plantuml
+@startuml
+!define RECTANGLE "rect"
+!define CIRCLE "circle"
+
+RECTANGLE Router
+RECTANGLE Switch
+RECTANGLE PC
+RECTANGLE Printer
+RECTANGLE Server
+
+Router --> Switch
+Switch --> PC
+Switch --> Printer
+Router --> Server
+@enduml
+```
+
+You can use various PlantUML tools to render this diagram. One popular option is the PlantUML Online Server: [PlantUML Online Server](http://www.plantuml.com/plantuml/uml).
+
+### Steps to Create and View Diagrams
+
+1. **Write the Code**:
+   - Write your diagram code using Mermaid or PlantUML syntax in a text file.
+
+2. **Render the Diagram**:
+   - Use an online tool or local renderer to convert the text file into a visual diagram.
+
+3. **Integrate with Documentation**:
+   - Embed the code directly into your documentation platform if it supports Mermaid or PlantUML.
+
+### Automation and Scripting
+
+To automate the generation of these diagrams, you can use scripts. Here’s an example of a simple Bash script to generate a PlantUML diagram:
+
+#### Bash Script for PlantUML
+
+```bash
+#!/bin/bash
+
+# Define the diagram in PlantUML syntax
+cat <<EOF > network_diagram.puml
+@startuml
+!define RECTANGLE "rect"
+!define CIRCLE "circle"
+
+RECTANGLE Router
+RECTANGLE Switch
+RECTANGLE PC
+RECTANGLE Printer
+RECTANGLE Server
+
+Router --> Switch
+Switch --> PC
+Switch --> Printer
+Router --> Server
+@enduml
+EOF
+
+# Use PlantUML to generate the diagram
+plantuml network_diagram.puml
+```
+
+Make sure you have PlantUML and Java installed on your system to run this script.
+
+### Using Markdown for Documentation
+
+You can also embed Mermaid diagrams directly in Markdown files for your documentation:
+
+#### Markdown with Mermaid
+
+```markdown
+# Network Diagram
+
+```mermaid
+graph TD
+    subgraph Network
+        Router["Router"] --- Switch["Switch"]
+        Switch --- PC["PC"]
+        Switch --- Printer["Printer"]
+        Router --- Server["Server"]
+    end
+```
+```
+
+This way, you can keep your diagrams as code within your documentation, making them easy to maintain and update.
+
+These approaches allow you to create and manage diagrams using code, making them reproducible and version-controlled, which is ideal for collaborative and automated environments.
+
+---
+
 Great! For representing containers, networks, and infrastructure with logic and layers of abstraction, we can use both Mermaid and Draw.io to create comprehensive and clear diagrams. Here are some detailed examples and instructions for each tool.
 
 ### Mermaid Diagrams
